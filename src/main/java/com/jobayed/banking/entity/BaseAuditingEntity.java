@@ -3,6 +3,7 @@ package com.jobayed.banking.entity;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 
 @MappedSuperclass
 @Getter
+@Setter
 public abstract class BaseAuditingEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,6 +27,6 @@ public abstract class BaseAuditingEntity {
     private LocalDateTime updatedAt;
 
     @Version
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "version", nullable = false)
     private Long version;
 }

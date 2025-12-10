@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -15,18 +14,12 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransactionLog extends BaseAuditingEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     private UUID transactionId;
 
     private Double amount;
 
     private String fromAccount;
     private String toAccount;
-
-    private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "account_id")

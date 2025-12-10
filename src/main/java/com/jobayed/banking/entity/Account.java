@@ -4,6 +4,7 @@ import com.jobayed.banking.enums.AccountStatus;
 import com.jobayed.banking.enums.AccountType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -34,7 +35,7 @@ public class Account extends BaseAuditingEntity {
     private String accountNumber;
 
     @Column(name = "ac_typ", nullable = false)
-    private AccountType accountType;   // SAVINGS, CURRENT
+    private AccountType accountType; // SAVINGS, CURRENT
 
     @Column(name = "balance", nullable = false)
     private Double balance;
@@ -50,4 +51,7 @@ public class Account extends BaseAuditingEntity {
 
     @Column(name = "address", nullable = false)
     private String address;
+
+    @OneToMany(mappedBy = "account", fetch = jakarta.persistence.FetchType.LAZY)
+    private java.util.List<TransactionLog> transactions;
 }

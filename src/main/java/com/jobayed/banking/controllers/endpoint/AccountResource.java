@@ -1,0 +1,64 @@
+package com.jobayed.banking.controllers.endpoint;
+
+import com.jobayed.banking.entity.Account;
+import com.jobayed.banking.service.AccountService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * Vantage Labs LLC.
+ * User: Jobayed Ullah
+ * Time: 12/10/25 7:42 PM
+ */
+
+@RestController
+@Slf4j
+@RequiredArgsConstructor
+@RequestMapping("/api/accounts")
+public class AccountResource {
+
+    private final AccountService accountService;
+
+    @GetMapping
+    public ResponseEntity<Page<Account>> searchAccounts(
+            @RequestParam(required = false) String query,
+            Pageable pageable) {
+        return ResponseEntity.ok(accountService.searchAccounts(query, pageable));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Account> getAccount(@PathVariable Long id) {
+        return ResponseEntity.ok(accountService.getAccount(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<Account> createAccount(@RequestBody Account account) {
+        return new ResponseEntity<>(accountService.createAccount(account), HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Account> updateAccount(@PathVariable Long id, @RequestBody Account account) {
+        return ResponseEntity.ok(accountService.updateAccount(id, account));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteAccount(@PathVariable Long id) {
+        accountService.deleteAccount(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/with-transactions")
+    public ResponseEntity<Account> getAccountWithTransactions(@PathVariable Long id) {
+        return ResponseEntity.ok(accountService.getAccountWithTransactions(id));
+    }
+
+    @GetMapping("/currency-rates")
+    public ResponseEntity<String> getCurrencyRates() {
+        return ResponseEntity.ok(accountService.getCurrencyRates());
+    }
+}
