@@ -1,6 +1,7 @@
 package com.jobayed.banking.controllers.endpoint;
 
 import com.jobayed.banking.controllers.dto.request.SearchRequest;
+import com.jobayed.banking.controllers.dto.response.AccountResponse;
 import com.jobayed.banking.entity.Account;
 import com.jobayed.banking.service.AccountService;
 import lombok.RequiredArgsConstructor;
@@ -26,36 +27,37 @@ public class AccountResource {
     private final AccountService accountService;
 
     @GetMapping
-    public ResponseEntity<Page<Account>> searchAccounts(
+    public ResponseEntity<Page<AccountResponse>> searchAccounts(
             @ModelAttribute SearchRequest request,
             Pageable pageable) {
         return ResponseEntity.ok(accountService.searchAccounts(request, pageable));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Account> getAccount(@PathVariable Long id) {
-        return ResponseEntity.ok(accountService.getAccount(id));
+    @GetMapping("/{accountNumber}")
+    public ResponseEntity<AccountResponse> getAccount(@PathVariable String accountNumber) {
+        return ResponseEntity.ok(accountService.getAccount(accountNumber));
     }
 
     @PostMapping
-    public ResponseEntity<Account> createAccount(@RequestBody Account account) {
+    public ResponseEntity<AccountResponse> createAccount(@RequestBody Account account) {
         return new ResponseEntity<>(accountService.createAccount(account), HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Account> updateAccount(@PathVariable Long id, @RequestBody Account account) {
-        return ResponseEntity.ok(accountService.updateAccount(id, account));
+    @PutMapping("/{accountNumber}")
+    public ResponseEntity<AccountResponse> updateAccount(@PathVariable String accountNumber,
+            @RequestBody Account account) {
+        return ResponseEntity.ok(accountService.updateAccount(accountNumber, account));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAccount(@PathVariable Long id) {
-        accountService.deleteAccount(id);
+    @DeleteMapping("/{accountNumber}")
+    public ResponseEntity<Void> deleteAccount(@PathVariable String accountNumber) {
+        accountService.deleteAccount(accountNumber);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{id}/with-transactions")
-    public ResponseEntity<Account> getAccountWithTransactions(@PathVariable Long id) {
-        return ResponseEntity.ok(accountService.getAccountWithTransactions(id));
+    @GetMapping("/{accountNumber}/with-transactions")
+    public ResponseEntity<AccountResponse> getAccountWithTransactions(@PathVariable String accountNumber) {
+        return ResponseEntity.ok(accountService.getAccountWithTransactions(accountNumber));
     }
 
     @GetMapping("/currency-rates")

@@ -12,6 +12,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import com.jobayed.banking.controllers.dto.request.SearchRequest;
+import com.jobayed.banking.controllers.dto.response.AccountResponse;
+import com.jobayed.banking.mapper.AccountMapper;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -45,6 +47,9 @@ class AccountServiceTest {
     @Mock
     private RestClient.ResponseSpec responseSpec;
 
+    @Mock
+    private AccountMapper accountMapper;
+
     @InjectMocks
     private AccountService accountService;
 
@@ -64,30 +69,44 @@ class AccountServiceTest {
 
     @Test
     void createAccount_Success() {
-        when(accountRepository.save(any(Account.class))).thenReturn(account);
+        AccountResponse response = new AccountResponse();
+        response.setAccountNumber("1020123456789");
 
-        Account created = accountService.createAccount(account);
+        // Mock existence check to return false (unique)
+        when(accountRepository.existsByAccountNumber(anyString())).thenReturn(false);
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+        when(accountMapper.toResponse(any(Account.class))).thenReturn(response);
+
+        AccountResponse created = accountService.createAccount(account);
 
         assertNotNull(created);
-        assertEquals("12345", created.getAccountNumber());
+        assertEquals("1020123456789", created.getAccountNumber());
         verify(accountRepository, times(1)).save(account);
     }
 
     @Test
     void getAccount_Success() {
-        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        AccountResponse response = new AccountResponse();
+        response.setAccountNumber("12345");
+        // set other fields if necessary for verification, currently checking ID is
+        // tricky as response doesn't have it,
+        // but we can check accountNumber or just not null. Service logic wraps
+        // repository -> mapper.
 
-        Account found = accountService.getAccount(1L);
+        when(accountRepository.findByAccountNumber("12345")).thenReturn(Optional.of(account));
+        when(accountMapper.toResponse(account)).thenReturn(response);
+
+        AccountResponse found = accountService.getAccount("12345");
 
         assertNotNull(found);
-        assertEquals(1L, found.getId());
+        assertEquals("12345", found.getAccountNumber());
     }
 
     @Test
     void getAccount_NotFound() {
-        when(accountRepository.findById(1L)).thenReturn(Optional.empty());
+        when(accountRepository.findByAccountNumber("12345")).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> accountService.getAccount(1L));
+        assertThrows(RuntimeException.class, () -> accountService.getAccount("12345"));
     }
 
     @Test
@@ -95,26 +114,37 @@ class AccountServiceTest {
         Page<Account> page = new PageImpl<>(Collections.singletonList(account));
         when(accountRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
 
+        AccountResponse response = new AccountResponse();
+        when(accountMapper.toResponse(any(Account.class))).thenReturn(response);
+
         SearchRequest request = new SearchRequest();
         request.setQuery("John");
 
-        Page<Account> result = accountService.searchAccounts(request, PageRequest.of(0, 10));
+        Page<AccountResponse> result = accountService.searchAccounts(request, PageRequest.of(0, 10));
 
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
+
+        // Verify default dates are set
+        assertNotNull(request.getEndDate());
+        assertNotNull(request.getStartDate());
     }
 
     @Test
     void updateAccount_Success() {
-        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(accountRepository.findByAccountNumber("12345")).thenReturn(Optional.of(account));
         when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        AccountResponse response = new AccountResponse();
+        response.setFirstName("Jane");
+        when(accountMapper.toResponse(any(Account.class))).thenReturn(response);
 
         Account updateDetails = new Account();
         updateDetails.setFirstName("Jane");
         updateDetails.setLastName("Doe");
         // ... set other fields
 
-        Account updated = accountService.updateAccount(1L, updateDetails);
+        AccountResponse updated = accountService.updateAccount("12345", updateDetails);
 
         assertNotNull(updated);
         assertEquals("Jane", updated.getFirstName());
@@ -123,22 +153,22 @@ class AccountServiceTest {
 
     @Test
     void deleteAccount_Success() {
-        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(accountRepository.findByAccountNumber("12345")).thenReturn(Optional.of(account));
         doNothing().when(accountRepository).delete(account);
 
-        accountService.deleteAccount(1L);
+        accountService.deleteAccount("12345");
 
         verify(accountRepository, times(1)).delete(account);
     }
 
     @Test
     void getAccountWithTransactions_Success() {
-        when(accountRepository.findByIdWithTransactions(1L)).thenReturn(Optional.of(account));
+        when(accountRepository.findByAccountNumberWithTransactions("12345")).thenReturn(Optional.of(account));
+        when(accountMapper.toResponse(account)).thenReturn(new AccountResponse());
 
-        Account result = accountService.getAccountWithTransactions(1L);
+        AccountResponse result = accountService.getAccountWithTransactions("12345");
 
         assertNotNull(result);
-        assertEquals(1L, result.getId());
     }
 
     @Test

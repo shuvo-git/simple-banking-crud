@@ -5,6 +5,8 @@ import com.jobayed.banking.entity.Account;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +38,19 @@ public class AccountSpecification {
 
             if (request.getBranch() != null && !request.getBranch().isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("branch")), "%" + request.getBranch().toLowerCase() + "%"));
+            }
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+
+            if (request.getStartDate() != null && !request.getStartDate().isEmpty()) {
+                LocalDate start = LocalDate.parse(request.getStartDate(), formatter);
+                predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), start.atStartOfDay()));
+            }
+
+            if (request.getEndDate() != null && !request.getEndDate().isEmpty()) {
+                LocalDate end = LocalDate.parse(request.getEndDate(), formatter);
+                // Compare < (End + 1 Day) at 00:00:00 to include the full end date
+                predicates.add(cb.lessThan(root.get("createdAt"), end.plusDays(1).atStartOfDay()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

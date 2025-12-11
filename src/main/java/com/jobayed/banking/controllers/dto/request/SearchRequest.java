@@ -10,4 +10,6 @@ public class SearchRequest {
     private Double minBalance;
     private Double maxBalance;
     private String branch;
+    private String startDate;
+    private String endDate;
 }

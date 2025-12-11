@@ -10,6 +10,10 @@ import java.util.Optional;
 
 public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpecificationExecutor<Account> {
 
-    @Query("SELECT a FROM Account a LEFT JOIN FETCH a.transactions WHERE a.id = :id")
-    Optional<Account> findByIdWithTransactions(@Param("id") Long id);
+    Optional<Account> findByAccountNumber(String accountNumber);
+
+    boolean existsByAccountNumber(String accountNumber);
+
+    @Query("SELECT a FROM Account a LEFT JOIN FETCH a.transactions WHERE a.accountNumber = :accountNumber")
+    Optional<Account> findByAccountNumberWithTransactions(@Param("accountNumber") String accountNumber);
 }
