@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Account extends BaseAuditingEntity {
     @Column(name = "fname", nullable = false)
     private String firstName;
@@ -53,5 +55,5 @@ public class Account extends BaseAuditingEntity {
     private String address;
 
     @OneToMany(mappedBy = "account", fetch = jakarta.persistence.FetchType.LAZY)
-    private java.util.List<TransactionLog> transactions;
+    private java.util.List<Ledger> ledgers;
 }

@@ -22,4 +22,5 @@ public class AccountResponse {
     private AccountStatus accountStatus; // ACTIVE, INACTIVE, DELETED
 
     private String address;
+    private java.util.List<LedgerResponse> transactions;
 }

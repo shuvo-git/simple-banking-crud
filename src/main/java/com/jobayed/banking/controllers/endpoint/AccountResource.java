@@ -25,6 +25,14 @@ import org.springframework.web.bind.annotation.*;
 public class AccountResource {
 
     private final AccountService accountService;
+    private final com.jobayed.banking.service.TransactionService transactionService;
+
+    @PostMapping("/{accountNumber}/transactions")
+    public ResponseEntity<AccountResponse> initiateTransaction(
+            @PathVariable String accountNumber,
+            @RequestBody com.jobayed.banking.controllers.dto.request.TransactionRequest request) {
+        return ResponseEntity.ok(transactionService.performTransaction(accountNumber, request));
+    }
 
     @GetMapping
     public ResponseEntity<Page<AccountResponse>> searchAccounts(
@@ -34,13 +42,15 @@ public class AccountResource {
     }
 
     @GetMapping("/{accountNumber}")
-    public ResponseEntity<AccountResponse> getAccount(@PathVariable String accountNumber) {
-        return ResponseEntity.ok(accountService.getAccount(accountNumber));
+    public ResponseEntity<AccountResponse> getAccount(@PathVariable String accountNumber,
+            @RequestParam(defaultValue = "false") boolean withLedger) {
+        return ResponseEntity.ok(accountService.getAccount(accountNumber, withLedger));
     }
 
     @PostMapping
-    public ResponseEntity<AccountResponse> createAccount(@RequestBody Account account) {
-        return new ResponseEntity<>(accountService.createAccount(account), HttpStatus.CREATED);
+    public ResponseEntity<AccountResponse> createAccount(
+            @RequestBody com.jobayed.banking.controllers.dto.request.AccountRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(accountService.createAccount(request));
     }
 
     @PutMapping("/{accountNumber}")
@@ -53,11 +63,6 @@ public class AccountResource {
     public ResponseEntity<Void> deleteAccount(@PathVariable String accountNumber) {
         accountService.deleteAccount(accountNumber);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/{accountNumber}/with-transactions")
-    public ResponseEntity<AccountResponse> getAccountWithTransactions(@PathVariable String accountNumber) {
-        return ResponseEntity.ok(accountService.getAccountWithTransactions(accountNumber));
     }
 
     @GetMapping("/currency-rates")

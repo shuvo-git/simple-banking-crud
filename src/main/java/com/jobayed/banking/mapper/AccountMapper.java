@@ -26,6 +26,19 @@ public class AccountMapper {
         response.setAccountStatus(account.getAccountStatus());
         response.setAddress(account.getAddress());
 
+        if (account.getLedgers() != null) {
+            response.setTransactions(account.getLedgers().stream()
+                    .map(ledger -> com.jobayed.banking.controllers.dto.response.LedgerResponse.builder()
+                            .transactionId(ledger.getTransactionId())
+                            .amount(ledger.getAmount())
+                            .transactionType(ledger.getTransactionType())
+                            .transactionDate(ledger.getTransactionDate())
+                            .balanceAfter(ledger.getBalanceAfter())
+                            .description(ledger.getDescription())
+                            .build())
+                    .collect(java.util.stream.Collectors.toList()));
+        }
+
         return response;
     }
 }

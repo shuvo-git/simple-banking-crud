@@ -14,6 +14,6 @@ public interface AccountRepository extends JpaRepository<Account, Long>, JpaSpec
 
     boolean existsByAccountNumber(String accountNumber);
 
-    @Query("SELECT a FROM Account a LEFT JOIN FETCH a.transactions WHERE a.accountNumber = :accountNumber")
-    Optional<Account> findByAccountNumberWithTransactions(@Param("accountNumber") String accountNumber);
+    @Query("SELECT a FROM Account a LEFT JOIN FETCH a.ledgers WHERE a.accountNumber = :accountNumber")
+    Optional<Account> findByAccountNumberWithLedgers(@Param("accountNumber") String accountNumber);
 }

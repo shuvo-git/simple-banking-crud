@@ -5,55 +5,51 @@ import com.jobayed.banking.entity.Account;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AccountSpecification {
     public static Specification<Account> from(SearchRequest request) {
-        return (root, query, cb) -> {
+        return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             if (request.getQuery() != null && !request.getQuery().isEmpty()) {
                 String likePattern = "%" + request.getQuery().toLowerCase() + "%";
-                predicates.add(cb.or(
-                        cb.like(cb.lower(root.get("firstName")), likePattern),
-                        cb.like(cb.lower(root.get("lastName")), likePattern),
-                        cb.like(cb.lower(root.get("email")), likePattern),
-                        cb.like(root.get("accountNumber"), likePattern)));
+                predicates.add(criteriaBuilder.or(
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("firstName")), likePattern),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("lastName")), likePattern),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), likePattern),
+                        criteriaBuilder.like(root.get("accountNumber"), likePattern)));
             }
 
             if (request.getAccountType() != null) {
-                predicates.add(cb.equal(root.get("accountType"), request.getAccountType()));
+                predicates.add(criteriaBuilder.equal(root.get("accountType"), request.getAccountType()));
             }
 
             if (request.getMinBalance() != null) {
-                predicates.add(cb.ge(root.get("balance"), request.getMinBalance()));
+                predicates.add(criteriaBuilder.ge(root.get("balance"), request.getMinBalance()));
             }
 
             if (request.getMaxBalance() != null) {
-                predicates.add(cb.le(root.get("balance"), request.getMaxBalance()));
+                predicates.add(criteriaBuilder.le(root.get("balance"), request.getMaxBalance()));
             }
 
             if (request.getBranch() != null && !request.getBranch().isEmpty()) {
-                predicates.add(cb.like(cb.lower(root.get("branch")), "%" + request.getBranch().toLowerCase() + "%"));
+                predicates.add(criteriaBuilder.like(criteriaBuilder
+                        .lower(root.get("branch")), "%" + request.getBranch().toLowerCase() + "%"));
             }
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-
-            if (request.getStartDate() != null && !request.getStartDate().isEmpty()) {
-                LocalDate start = LocalDate.parse(request.getStartDate(), formatter);
-                predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), start.atStartOfDay()));
+            if (request.getStart() != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createdAt"), request.getStart().atStartOfDay()));
             }
 
-            if (request.getEndDate() != null && !request.getEndDate().isEmpty()) {
-                LocalDate end = LocalDate.parse(request.getEndDate(), formatter);
+            if (request.getEnd() != null) {
                 // Compare < (End + 1 Day) at 00:00:00 to include the full end date
-                predicates.add(cb.lessThan(root.get("createdAt"), end.plusDays(1).atStartOfDay()));
+                predicates.add(criteriaBuilder.lessThan(root.get("createdAt"), request.getEnd()
+                        .plusDays(1).atStartOfDay()));
             }
 
-            return cb.and(predicates.toArray(new Predicate[0]));
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }
 }
