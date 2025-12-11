@@ -1,6 +1,10 @@
 package com.jobayed.banking.service;
 
+import com.jobayed.banking.controllers.dto.request.SearchRequest;
 import com.jobayed.banking.entity.Account;
+import jakarta.persistence.criteria.Predicate;
+import com.jobayed.banking.repository.specification.AccountSpecification;
+import org.springframework.data.jpa.domain.Specification;
 import com.jobayed.banking.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,9 +34,10 @@ public class AccountService {
                 .orElseThrow(() -> new RuntimeException("Account not found with id: " + id));
     }
 
-    public Page<Account> searchAccounts(String query, Pageable pageable) {
-        log.info("Searching accounts with query: {}", query);
-        return accountRepository.searchAccounts(query, pageable);
+    public Page<Account> searchAccounts(SearchRequest request, Pageable pageable) {
+        log.info("Searching accounts with request: {}", request);
+        Specification<Account> spec = AccountSpecification.from(request);
+        return accountRepository.findAll(spec, pageable);
     }
 
     @Transactional

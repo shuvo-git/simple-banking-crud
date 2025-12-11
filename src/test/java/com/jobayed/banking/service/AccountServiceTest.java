@@ -3,6 +3,7 @@ package com.jobayed.banking.service;
 import com.jobayed.banking.entity.Account;
 import com.jobayed.banking.enums.AccountType;
 import com.jobayed.banking.repository.AccountRepository;
+import org.springframework.data.jpa.domain.Specification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
+import com.jobayed.banking.controllers.dto.request.SearchRequest;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -91,9 +93,12 @@ class AccountServiceTest {
     @Test
     void searchAccounts_Success() {
         Page<Account> page = new PageImpl<>(Collections.singletonList(account));
-        when(accountRepository.searchAccounts(anyString(), any(Pageable.class))).thenReturn(page);
+        when(accountRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
 
-        Page<Account> result = accountService.searchAccounts("John", PageRequest.of(0, 10));
+        SearchRequest request = new SearchRequest();
+        request.setQuery("John");
+
+        Page<Account> result = accountService.searchAccounts(request, PageRequest.of(0, 10));
 
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());

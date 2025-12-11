@@ -1,5 +1,6 @@
 package com.jobayed.banking.controllers.endpoint;
 
+import com.jobayed.banking.controllers.dto.request.SearchRequest;
 import com.jobayed.banking.entity.Account;
 import com.jobayed.banking.service.AccountService;
 import lombok.RequiredArgsConstructor;
@@ -26,9 +27,9 @@ public class AccountResource {
 
     @GetMapping
     public ResponseEntity<Page<Account>> searchAccounts(
-            @RequestParam(required = false) String query,
+            @ModelAttribute SearchRequest request,
             Pageable pageable) {
-        return ResponseEntity.ok(accountService.searchAccounts(query, pageable));
+        return ResponseEntity.ok(accountService.searchAccounts(request, pageable));
     }
 
     @GetMapping("/{id}")
