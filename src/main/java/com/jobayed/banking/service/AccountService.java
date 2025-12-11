@@ -18,5 +18,7 @@ public interface AccountService {
 
     Page<AccountResponse> searchAccounts(SearchRequest request, Pageable pageable);
 
+    Page<AccountResponse> getAllAccounts(Pageable pageable);
+
     String getCurrencyRates();
 }

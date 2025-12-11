@@ -10,14 +10,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -29,6 +30,9 @@ class AccountResourceTest {
     @Mock
     private AccountService accountService;
 
+    @Mock
+    private com.jobayed.banking.service.TransactionService transactionService;
+
     @InjectMocks
     private AccountResource accountResource;
 
@@ -36,7 +40,9 @@ class AccountResourceTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(accountResource).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(accountResource)
+                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
+                .build();
     }
 
     @Test
@@ -52,8 +58,8 @@ class AccountResourceTest {
         when(accountService.createAccount(any(AccountRequest.class))).thenReturn(response);
 
         mockMvc.perform(post("/api/accounts")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.accountNumber").value("12345"));
     }
@@ -71,6 +77,22 @@ class AccountResourceTest {
     }
 
     @Test
+    void getAllAccounts_Success() throws Exception {
+        // Mock Page response if needed, for now just checking status
+        // when(accountService.getAllAccounts(any(Pageable.class))).thenReturn(Page.empty());
+
+        mockMvc.perform(get("/api/accounts"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void searchAccounts_Success() throws Exception {
+        mockMvc.perform(get("/api/accounts/search")
+                        .param("query", "John"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     void getAccount_WithLedger_Success() throws Exception {
         AccountResponse response = new AccountResponse();
         response.setAccountNumber("12345");
@@ -78,7 +100,7 @@ class AccountResourceTest {
         when(accountService.getAccount("12345", true)).thenReturn(response);
 
         mockMvc.perform(get("/api/accounts/12345")
-                .param("withLedger", "true"))
+                        .param("withLedger", "true"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accountNumber").value("12345"));
     }

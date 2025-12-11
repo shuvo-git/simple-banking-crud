@@ -128,6 +128,11 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.findAll(spec, pageable).map(accountMapper::toResponse);
     }
 
+    @Override
+    public Page<AccountResponse> getAllAccounts(Pageable pageable) {
+        return accountRepository.findAll(pageable).map(accountMapper::toResponse);
+    }
+
     @Transactional
     public AccountResponse updateAccount(String accountNumber, Account accountDetails) {
         Account account = accountRepository.findByAccountNumber(accountNumber)

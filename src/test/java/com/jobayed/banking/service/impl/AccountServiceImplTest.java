@@ -128,6 +128,20 @@ class AccountServiceImplTest {
     }
 
     @Test
+    void getAllAccounts_Success() {
+        Page<Account> page = new PageImpl<>(Collections.singletonList(account));
+        when(accountRepository.findAll(any(Pageable.class))).thenReturn(page);
+
+        AccountResponse response = new AccountResponse();
+        when(accountMapper.toResponse(any(Account.class))).thenReturn(response);
+
+        Page<AccountResponse> result = accountService.getAllAccounts(PageRequest.of(0, 10));
+
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+    }
+
+    @Test
     void searchAccounts_Success() {
         Page<Account> page = new PageImpl<>(Collections.singletonList(account));
         when(accountRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
