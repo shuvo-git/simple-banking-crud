@@ -8,8 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestClient;
 
 @Service
 @RequiredArgsConstructor
@@ -17,7 +16,7 @@ import reactor.core.publisher.Mono;
 public class AccountService {
 
     private final AccountRepository accountRepository;
-    private final WebClient.Builder webClientBuilder;
+    private final RestClient.Builder restClientBuilder;
 
     @Transactional
     public Account createAccount(Account account) {
@@ -69,16 +68,15 @@ public class AccountService {
         // Using a sample URL or a mock service for demonstration
         String url = "https://api.exchangerate-api.com/v4/latest/USD";
 
-        return webClientBuilder.build()
-                .get()
-                .uri(url)
-                .retrieve()
-                .bodyToMono(String.class)
-                .onErrorResume(e -> {
-                    log.error("Error fetching currency rates", e);
-                    return Mono.just("{\"error\": \"Unable to fetch rates\"}");
-                })
-                .block(); // Blocking for simplicity in this synchronous service, usually would return
-                          // Mono/Flux
+        try {
+            return restClientBuilder.build()
+                    .get()
+                    .uri(url)
+                    .retrieve()
+                    .body(String.class);
+        } catch (Exception e) {
+            log.error("Error fetching currency rates", e);
+            return "{\"error\": \"Unable to fetch rates\"}";
+        }
     }
 }

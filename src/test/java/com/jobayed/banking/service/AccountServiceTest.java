@@ -13,8 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestClient;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -30,19 +29,19 @@ class AccountServiceTest {
     private AccountRepository accountRepository;
 
     @Mock
-    private WebClient.Builder webClientBuilder;
+    private RestClient.Builder restClientBuilder;
 
     @Mock
-    private WebClient webClient;
+    private RestClient restClient;
 
     @Mock
-    private WebClient.RequestHeadersUriSpec requestHeadersUriSpec;
+    private RestClient.RequestHeadersUriSpec requestHeadersUriSpec;
 
     @Mock
-    private WebClient.RequestHeadersSpec requestHeadersSpec;
+    private RestClient.RequestHeadersSpec requestHeadersSpec;
 
     @Mock
-    private WebClient.ResponseSpec responseSpec;
+    private RestClient.ResponseSpec responseSpec;
 
     @InjectMocks
     private AccountService accountService;
@@ -141,11 +140,11 @@ class AccountServiceTest {
     void getCurrencyRates_Success() {
         String mockResponse = "{\"rates\": {\"EUR\": 0.85}}";
 
-        when(webClientBuilder.build()).thenReturn(webClient);
-        when(webClient.get()).thenReturn(requestHeadersUriSpec);
+        when(restClientBuilder.build()).thenReturn(restClient);
+        when(restClient.get()).thenReturn(requestHeadersUriSpec);
         when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.bodyToMono(String.class)).thenReturn(Mono.just(mockResponse));
+        when(responseSpec.body(String.class)).thenReturn(mockResponse);
 
         String rates = accountService.getCurrencyRates();
 
