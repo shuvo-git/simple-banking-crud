@@ -4,6 +4,8 @@ import com.jobayed.banking.controllers.dto.response.AccountResponse;
 import com.jobayed.banking.entity.Account;
 import org.springframework.stereotype.Component;
 
+import static jakarta.persistence.Persistence.getPersistenceUtil;
+
 @Component
 public class AccountMapper {
 
@@ -26,7 +28,8 @@ public class AccountMapper {
         response.setAccountStatus(account.getAccountStatus());
         response.setAddress(account.getAddress());
 
-        if (account.getLedgers() != null) {
+        if (account.getLedgers() != null
+                && getPersistenceUtil().isLoaded(account.getLedgers())) {
             response.setTransactions(account.getLedgers().stream()
                     .map(ledger -> com.jobayed.banking.controllers.dto.response.LedgerResponse.builder()
                             .transactionId(ledger.getTransactionId())
